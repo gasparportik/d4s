@@ -93,6 +93,10 @@ body {
     padding: 1em;
     overflow: auto;
     background: $color-bg-0;
+
+    @media screen and (max-width: $bpu-m) {
+        padding: 0;
+    }
 }
 
 .help-overlay {
@@ -128,6 +132,14 @@ body {
         border-bottom-right-radius: $border-radius;
     }
 
+    @media screen and (max-width: $bpu-m) {
+
+        &:first-child,
+        &:last-child {
+            border-radius: 0;
+        }
+    }
+
     .header {
         input {
             border: 1px solid #555;
@@ -143,6 +155,10 @@ body {
     section {
         margin: 0 0 1em 0;
         padding: 0.2em;
+
+        &.collapsed {
+            margin-bottom: 0em;
+        }
     }
 
     .section-head {
@@ -162,18 +178,39 @@ body {
         }
     }
 
-    .stats dl {
-        margin: 0;
-        padding: 1em;
-        display: grid;
-        grid-template-columns: 1fr 2fr 1fr 2fr;
+    .collapsed .section-head {
+        text-decoration: line-through;
     }
 
-    .stats dl dd {
-        margin-left: 0;
-        text-align: right;
-        padding-right: 2em;
+    .stats dl {
+        margin: 0;
+        padding: 1em 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        @media screen and (max-width: $bpu-s) {
+            grid-template-columns: 1fr;
+        }
+
+        @media screen and (min-width: $bpl-xl) {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+
+        div {
+            padding: 0 0.5em;
+        }
+
+        dt {
+            float: left;
+        }
+
+        dd {
+            margin-left: 0;
+            float: right;
+            text-align: right;
+        }
     }
+
 
     .roll h4 {
         font-size: 2rem;
@@ -205,10 +242,10 @@ body {
 
         .chance {
             background: linear-gradient(to right,
-                hsla(calc(var(--percentage) + 0), 80%, 50%, 0.5) 0%,
-                hsla(calc(var(--percentage) + 0), 80%, 50%, 0.5) calc(1% * var(--percentage)),
-                rgba(0, 0, 0, 0) calc(1% * var(--percentage) + 1%),
-                rgba(0, 0, 0, 0) 100%);
+                    hsla(calc(var(--percentage) + 0), 80%, 50%, 0.5) 0%,
+                    hsla(calc(var(--percentage) + 0), 80%, 50%, 0.5) calc(1% * var(--percentage)),
+                    rgba(0, 0, 0, 0) calc(1% * var(--percentage) + 1%),
+                    rgba(0, 0, 0, 0) 100%);
         }
     }
 }

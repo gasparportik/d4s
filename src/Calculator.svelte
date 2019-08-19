@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
     import {
         loadRollHistory,
         saveRollHistory,
         parseCombinationString,
         evaluateRolls,
         randomRoll,
+        formatAge,
+        formatNumberMetric,
     } from './functions';
     import Chart from './Chart.svelte';
     import Icon from './Icon.svelte';
@@ -12,8 +14,10 @@
     // basic stuff
     export let removeSelf = () => {};
     export let source = '2d6+2';
-    let diceString, name;
-    function serializeCombination(ds, n) {
+    let diceString: string;
+    let name: string | undefined;
+    let dice: DiceConfig;
+    function serializeCombination(ds: string, n: string) {
         source = ds + (n ? ':' + n : '');
     }
 
@@ -23,7 +27,7 @@
 
     // naming
     let renaming = false;
-    let renameInput = null;
+    let renameInput: HTMLInputElement;
     function rename() {
         renaming = true;
         setTimeout(() => {
@@ -31,7 +35,7 @@
             renameInput.select();
         }, 10);
     }
-    function renameKeyup(e) {
+    function renameKeyup(e: KeyboardEvent) {
         if (e.keyCode === 13) {
             renaming = false;
         }
@@ -43,6 +47,8 @@
     let rollHistoryCollapsed = false;
     let latestRoll = null;
     let rollHistory = loadRollHistory(diceString);
+    let realAverage: number;
+    let realTotal: number;
     let t = timeTick();
     $: if (diceString) {
         rollHistory = loadRollHistory(diceString);
@@ -53,6 +59,8 @@
     $: if (rollHistory.length > 0) {
         saveRollHistory(diceString, rollHistory);
     }
+    $: realTotal = rollHistory.reduce((a, r) => a + r.value, 0);
+    $: realAverage = realTotal / rollHistory.length;
     function timeTick() {
         return Math.round(new Date().getTime() / 1000);
     }
@@ -61,10 +69,11 @@
         window.setTimeout(tickTock, 1000);
     }
     tickTock();
-    function newRoll(e) {
+    function newRoll(e?: MouseEvent) {
         let rollCount = 1;
         if (e && e.altKey) {
-            rollCount = +prompt('How many rolls would you like?');
+            const answer = prompt('How many rolls would you like?');
+            rollCount = answer ? +answer : 0;
         } else if (e && e.shiftKey) {
             rollCount = 100;
         } else if (e && e.ctrlKey) {
@@ -79,7 +88,6 @@
             rollHistory = [latestRoll, ...allRolls.reverse(), ...rollHistory];
             return;
         }
-
         latestRoll = randomRoll(dice);
         latestRoll.time = timeTick();
         rollHistory = [latestRoll, ...rollHistory];
@@ -88,29 +96,24 @@
         rollHistory = [];
         saveRollHistory(diceString, null);
     }
-    function formatAge(seconds) {
-        if (seconds < 1) {
-            return 'now';
-        }
-        if (seconds < 60) {
-            return `${seconds} seconds ago`;
-        }
-        if (seconds < 3600) {
-            return `${Math.floor(seconds / 60)} minutes ago`;
-        }
-        return 'a long time ago';
-    }
 
     // evaluation
     let statsCollapsed = false;
     let chartCollapsed = false;
     let tableCollapsed = false;
+    let stats: ReturnType<typeof evaluateRolls>;
+    let rolls: StatisticalRoll[];
+    let maxChance: number;
     $: stats = evaluateRolls(dice);
     $: rolls = stats.rolls;
     $: maxChance = rolls.reduce((a, r) => Math.max(a, r.chance), 0);
 
     // settings
-    export let settings;
+    export let settings: any;
+    let showStats: boolean;
+    let showHistory: boolean;
+    let showChart: boolean;
+    let showTable: boolean;
     $: showStats = settings && settings.showStats;
     $: showHistory = settings && settings.showHistory;
     $: showChart = settings && settings.showChart;
@@ -174,7 +177,7 @@
             autocomplete="false" />
     </header>
 
-    <section class="roll">
+    <section class="roll" class:collapsed={latestRollCollapsed}>
         <div class="section-head">
             <span on:click={() => (latestRollCollapsed = !latestRollCollapsed)}>Latest roll</span>
             <button on:click={newRoll} title="New roll">
@@ -183,12 +186,12 @@
         </div>
         {#if !latestRollCollapsed && latestRoll !== null}
             <h4>{latestRoll.value}</h4>
-            <small>({latestRoll.dice.join(' + ')} + {dice.bonus})</small>
+            <small>({latestRoll.dieValues.join(' + ')} + {dice.bonus})</small>
         {/if}
     </section>
 
     {#if showHistory}
-        <section class="roll-history">
+        <section class="roll-history" class:collapsed={rollHistoryCollapsed}>
             <div class="section-head">
                 <span on:click={() => (rollHistoryCollapsed = !rollHistoryCollapsed)}>
                     Roll history({rollHistory.length})
@@ -211,27 +214,45 @@
     {/if}
 
     {#if showStats}
-        <section class="stats">
+        <section class="stats" class:collapsed={statsCollapsed}>
             <div class="section-head">
                 <span on:click={() => (statsCollapsed = !statsCollapsed)}>Stats</span>
             </div>
             {#if !statsCollapsed}
                 <dl>
-                    <dt>min</dt>
-                    <dd>{stats.min}</dd>
-                    <dt>max</dt>
-                    <dd>{stats.max}</dd>
-                    <dt>avg</dt>
-                    <dd>{stats.average.toFixed(2)}</dd>
-                    <dt>tot</dt>
-                    <dd>{stats.total}</dd>
+                    <div>
+                        <dt>min</dt>
+                        <dd>{stats.min}</dd>
+                    </div>
+                    <div>
+                        <dt>max</dt>
+                        <dd>{stats.max}</dd>
+                    </div>
+                    <div>
+                        <dt>avg</dt>
+                        <dd>{stats.average.toFixed(2)}</dd>
+                    </div>
+                    <div>
+                        <dt>all</dt>
+                        <dd>{formatNumberMetric(stats.total)}</dd>
+                    </div>
+                    {#if rollHistory && rollHistory.length > 0}
+                        <div>
+                            <dt>ravg</dt>
+                            <dd>{realAverage.toFixed(2)}</dd>
+                        </div>
+                        <div>
+                            <dt>tot</dt>
+                            <dd>{realTotal}</dd>
+                        </div>
+                    {/if}
                 </dl>
             {/if}
         </section>
     {/if}
 
     {#if showChart && rolls.length > 1}
-        <section class="chart">
+        <section class="chart" class:collapsed={chartCollapsed}>
             <div class="section-head">
                 <span on:click={() => (chartCollapsed = !chartCollapsed)}>Chart</span>
             </div>
@@ -242,7 +263,7 @@
     {/if}
 
     {#if showTable}
-        <section class="table">
+        <section class="table" class:collapsed={tableCollapsed}>
             <div class="section-head">
                 <span on:click={() => (tableCollapsed = !tableCollapsed)}>
                     Detailed roll chances

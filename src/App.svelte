@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
+    import { onMount } from 'svelte';
     import Calculator from './Calculator.svelte';
     import Icon from './Icon.svelte';
+
     import { parseParams, updateParams, onParamsChanged } from './functions';
 
-    let diceGroups = [];
-    function parseGroups(params) {
+    let diceGroups: string[] = [];
+    function parseGroups(params: Record<string, string>) {
         diceGroups = (params.d || '').split('|').filter(g => !!g);
     }
     onParamsChanged(parseGroups);
@@ -13,6 +15,7 @@
 
     let settingsVisible = false;
     let helpVisible = false;
+    let rollIndex = 0;
     let settings = {
         showAggregate: false,
         showChart: true,
@@ -24,35 +27,33 @@
     function add() {
         diceGroups = [...diceGroups, ''];
     }
-    function remove(index) {
+    function remove(index: number) {
         diceGroups = diceGroups.filter((_, i) => i !== index);
     }
-
-    let rollIndex = 0;
     function rollAll() {
         rollIndex += 1;
     }
 </script>
 
-<style>
+<style type="text/scss">
     .app-header {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
     }
+    .app-content {
+        flex: 1 1 auto;
+    }
     .calculators {
         display: flex;
         flex-direction: row;
         justify-items: stretch;
+        > :global(.calculator) {
+            flex: 1 1 0;
+        }
     }
     aside:not(.visible) {
         display: none;
-    }
-    .app-content {
-        flex: 1 1 auto;
-    }
-    :global(.calculators > .calculator) {
-        flex: 1 1 0;
     }
 </style>
 
@@ -115,6 +116,7 @@
         {/each}
     </div>
 </main>
+
 <aside class="help-overlay" class:visible={helpVisible}>
     <h2>How to write formulas</h2>
     <dl>

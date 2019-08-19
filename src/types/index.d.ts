@@ -10,9 +10,15 @@ type Die = {
 };
 
 type Roll = {
+    dieValues?: number[];
+    value: number;
+    time?: number;
+};
+
+type StatisticalRoll = {
     value: number;
     count: number;
-    chance: number
+    chance: number;
 };
 
 type DiceConfig = {

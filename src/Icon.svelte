@@ -18,10 +18,10 @@
 </script>
 
 <style>
-.icon {
-    width: 100%;
-    height: 100%;
-}
+    .icon {
+        width: 100%;
+        height: 100%;
+    }
 </style>
 
 <svg

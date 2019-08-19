@@ -32,7 +32,7 @@ export function parseCombinationString(ds: string): DiceConfig {
             bounds[1] = +high;
         }
     }
-    ds.replace(/\[[^\]]*\]/g, '').split(/[+\-]/).forEach((d) => {
+    ds.toLowerCase().replace(/\[[^\]]*\]/g, '').split(/[+\-]/).forEach((d) => {
         const match = /^ *([1-9]?)([dxk])([0-9]+) *$/.exec(d);
         const sign = pos === 0 || ds[pos - 1] === "+" ? 1 : -1;
         if (match) {
@@ -64,7 +64,7 @@ export function evaluateRolls(dc: DiceConfig) {
             return ([] as number[]).concat(...d.sides.map(s => a.map(r => r + d.sign * s)));
         }, dc.dice.length > 0 ? dc.dice[0].sides.map(v => v + dc.bonus) : []);
     const total = temp.length;
-    const ur: { [key: number]: Roll } = {};
+    const ur: { [key: number]: StatisticalRoll } = {};
     temp.forEach(r => {
         if (dc.range) {
             if (r < dc.range[0]) {
@@ -79,20 +79,20 @@ export function evaluateRolls(dc: DiceConfig) {
             ur[r] = { value: r, count: 1, chance: 0 };
         }
     });
-    const rolls = Object.values(ur).map((r) => ({ ...r, chance: 100 * r.count / total })).sort((a, b) => a.value - b.value);
+    const rolls: StatisticalRoll[] = Object.values(ur).map((r) => ({ ...r, chance: 100 * r.count / total })).sort((a, b) => a.value - b.value);
     const [min, max] = calculateRollRange(dc);
     // const average = temp.reduce((a, r) => a + r.v / total, 0) + bonus;
     const average = (min + max) / 2;
     return { min, average, max, total, rolls };
 }
 
-export function randomRoll(dc: DiceConfig, valueOnly = false) {
+export function randomRoll(dc: DiceConfig, valueOnly = false): Roll {
     if (valueOnly) {
         const value = dc.dice.reduce((a, d) => a + (pickRandom(d.sides) * d.sign), dc.bonus);
         return { value: between(dc.range, value) };
     } else {
         const dice = dc.dice.map((d) => pickRandom(d.sides) * d.sign);
         const value = dice.reduce((a, v) => a + v, dc.bonus);
-        return { dice, value: between(dc.range, value) };
+        return { dieValues: dice, value: between(dc.range, value) };
     }
 }

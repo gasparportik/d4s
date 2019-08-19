@@ -1,5 +1,6 @@
 export * from './dice';
 export * from './chart';
+export * from './formatting';
 
 const historyLimit = 1000;
 let programmaticHashUpdate = false;
@@ -18,7 +19,7 @@ export function parseParams(): Record<string, string> {
 export function updateParams(params: Record<string, string>) {
     const oldParams = parseParams();
     const combined = Object.assign(oldParams, params);
-    const parts = Object.keys(combined).map((key) => `${key}=${escape(combined[key])}`);
+    const parts = Object.keys(combined).map((key) => `${key}=${escape(combined[key])}`.replace('%2C', ','));
 
     const newHash = parts.length ? '#' + parts.join('&') : '';
     if (location.hash !== newHash) {
@@ -28,7 +29,7 @@ export function updateParams(params: Record<string, string>) {
     }
 }
 
-export function onParamsChanged(listener: Function) {
+export function onParamsChanged(listener: (params: Record<string, string>) => void) {
     window.addEventListener('hashchange', e => {
         if (!programmaticHashUpdate) {
             listener(parseParams());
@@ -44,7 +45,7 @@ export function loadRollHistory(ds: string) {
     }
 }
 
-export function saveRollHistory(ds: string, rh: any[]) {
+export function saveRollHistory(ds: string, rh: any[] | null) {
     try {
         if (rh !== null && rh.length > 0) {
             localStorage.setItem(`rollHistory[${ds}]`, JSON.stringify(rh.slice(0, historyLimit)));
