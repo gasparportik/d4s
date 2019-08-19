@@ -15,7 +15,12 @@ const isDev = process.env.NODE_ENV === "development";
 const plugins = [
   commonjs({ include: "node_modules/**", exclude: ['node_modules/d3*/**'] }),
   typescript({ typescript: tscompile, clean: true }),
-  svelte(require('./svelte.config.js')),
+  svelte({
+    dev: isProd ? false : true,
+    extensions: [".svelte"],
+    css: (css) => css.write("build/css/style.css", !isProd),
+    preprocess: require('./svelte.config.js').preprocess
+  }),
   resolve({
     mainFields: ['module', 'browser', 'main']
   }),
