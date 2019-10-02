@@ -37,7 +37,7 @@ export function onParamsChanged(listener: (params: Record<string, string>) => vo
     });
 }
 
-export function loadRollHistory(ds: string) {
+export function loadRollHistory(ds: string): any[] {
     try {
         return JSON.parse(localStorage.getItem(`rollHistory[${ds}]`) || '[]');
     } catch (ex) {

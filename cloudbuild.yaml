@@ -3,3 +3,8 @@ steps:
   args: ['install']
 - name: 'gcr.io/cloud-builders/npm'
   args: ['run', 'test']
+
+artifacts:
+  objects:
+    location: gs://d4s-build-artifacts
+    paths: build/*
