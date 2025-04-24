@@ -1,0 +1,139 @@
+
+:root {
+  color-scheme: light dark;
+
+  --color-accent-2: #be481b;
+  --color-accent-1: #bc3a3a;
+
+  --color-bg-0: #8f8573;
+  --color-bg-1: #831807;
+  --color-bg-2: #1f5857;
+
+  /* Backgrounds */
+  --color-bg: light-dark(#f6ecd2, #1c120b);
+  --color-panel: light-dark(#e6d5b8, #2f1f14);
+
+  /* Text */
+  --color-text-primary: light-dark(#2a1d14, #f4ebd0);
+  --color-text-secondary: light-dark(#6f5a40, #bfaf95);
+
+  /* Accents */
+  --color-accent-green: light-dark(#88b78f, #7baf8a);
+  --color-accent-yellow: light-dark(#d7a947, #d9b160);
+  --color-accent-red: light-dark(#b8574e, #a34d4d);
+
+  /* Charts and Borders */
+  --color-chart-line: light-dark(#8b7154, #3c2b1e);
+
+  /* Inputs and Buttons */
+  --color-input-bg: light-dark(#d2c0a3, #3a2c20);
+  --color-button: light-dark(#af5e2c, #944b2c);
+}
+
+html {
+  height: 100%;
+  background-color: var(--color-bg);
+}
+
+body {
+  height: 100%;
+  color: var(--color-text-primary);
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: lch(from var(--color-bg) calc(l + 1) c h);
+  position: sticky;
+  top: 0;
+  /* background: var(--color-bg); */
+  padding: 0.5em 1em;
+}
+
+.app-header .app-title {
+  /* color: #fff; */
+  font-size: 1.5rem;
+  font-weight: normal;
+  margin: 0;
+}
+
+.app-header .app-title .logo {
+  background-color: #eee;
+  padding: 3px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.app-header .app-title .title-long {
+  font-size: 0.9em;
+
+  /* @media screen and (max-width: $bpu-m) {
+                display: none; */
+}
+
+.app-header .actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.app-header .actions button {
+  vertical-align: middle;
+  padding: 0.2em;
+  margin-left: 0.2em;
+  line-height: 1;
+  color: #fff;
+  background-color: blue;
+  background-image: linear-gradient(
+    -15deg,
+    var(--color-bg-header),
+    var(--color-accent-2)
+  );
+  background-size: cover;
+  border: 1px solid #0005;
+  border-radius: 0.3em;
+}
+
+.app-header .actions button .icon {
+  fill: #fff;
+  width: 2em;
+  height: 2em;
+}
+
+.app-header,
+.app-settings {
+  box-shadow: 0 1px 1px 1px #3337;
+  z-index: 1;
+}
+
+.app-settings {
+  background: var(--color-bg-2);
+  color: #fff;
+  padding: 1em;
+}
+
+.app-content {
+  padding: 1em;
+  /* overflow: auto; */
+
+  /* @media screen and (max-width: $bpu-m) {
+        padding: 0;
+    } */
+}
+
+.help-overlay {
+  position: fixed;
+  z-index: 100;
+  top: 5em;
+  bottom: 5em;
+  background: #08100e;
+  color: #fff;
+  left: 5em;
+  right: 5em;
+  padding: 2em;
+}
+

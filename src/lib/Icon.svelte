@@ -1,32 +1,32 @@
-<script>
-    import * as mdi from '@mdi/js';
+<script lang="ts">
+  import * as mdi from "@mdi/js";
+  const options = {
+    plus: mdi.mdiPlus,
+    rollDice: mdi.mdiDiceMultiple,
+    rollDie: mdi.mdiDice5,
+    edit: mdi.mdiPencil,
+    settings: mdi.mdiCog,
+    help: mdi.mdiHelp,
+    delete: mdi.mdiTrashCan,
+    clear: mdi.mdiCancel,
+  };
+  type Props = {
+    name: keyof typeof options;
+    size?: string;
+    color?: string;
+  };
+  let { name, size, color = "currentColor" }: Props = $props();
 
-    export let name;
-    export let size = 'auto';
-    export let color = '#000';
-
-    $: path =
-        {
-            plus: mdi.mdiPlus,
-            rollDice: mdi.mdiDiceMultiple,
-            rollDie: mdi.mdiDice5,
-            settings: mdi.mdiSettings,
-            help: mdi.mdiHelp,
-            delete: mdi.mdiTrashCan,
-            clear: mdi.mdiCancel,
-        }[name] || '';
+  const path = $derived(options[name] || "");
 </script>
 
-<style>
-    .icon {
-        width: 100%;
-        height: 100%;
-    }
-</style>
-
-<svg
-    class="icon"
-    style={size !== 'auto' ? `width: ${size}; height: ${size};` : ''}
-    viewBox="0 0 24 24">
-    <path class="icon-color" fill={color} d={path} />
+<svg class="icon" style:--size={size} viewBox="0 0 24 24">
+  <path class="icon-color" fill={color} d={path} />
 </svg>
+
+<style>
+  .icon {
+    width: var(--size, 100%);
+    height: var(--size, 100%);
+  }
+</style>
