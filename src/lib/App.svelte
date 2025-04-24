@@ -1,41 +1,63 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import Calculator from './Calculator.svelte';
-    import Icon from './Icon.svelte';
+import { replaceState } from "$app/navigation";
+import { page } from "$app/state";
+import Calculator from "./Calculator.svelte";
+import Icon from "./Icon.svelte";
 
-    import { parseParams, updateParams, onParamsChanged } from './functions';
+const debounce = (callback: Function, wait = 300) => {
+  let timeout: ReturnType<typeof setTimeout>;
 
-    let diceGroups: string[] = [];
-    function parseGroups(params: Record<string, string>) {
-        diceGroups = (params.d || '').split('|').filter(g => !!g);
-    }
-    onParamsChanged(parseGroups);
-    parseGroups(parseParams());
-    $: updateParams({ d: diceGroups.join('|') });
+  return (...args: any[]) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => callback(...args), wait);
+  };
+};
+function parseParams(search: URLSearchParams): Record<string, string> {
+  const result: Record<string, string> = {};
+  Array.from(search.entries()).forEach(([key, value]) => {
+    result[key] = value.replace(/ /g, "+");
+  });
+  return result;
+}
+const updateParams = debounce((d: string) => {
+  const usp = new URLSearchParams({ d });
+  try {
+    replaceState("?" + usp.toString(), {});
+  } catch (e) {
+    console.error("Failed to update URL", e);
+  }
+}, 1000);
 
-    let settingsVisible = false;
-    let helpVisible = false;
-    let rollIndex = 0;
-    let settings = {
-        showAggregate: false,
-        showChart: true,
-        showStats: true,
-        showHistory: true,
-        showTable: true,
-    };
+let diceGroups = $state<string[]>([]);
+function parseGroups(params: Record<string, string>) {
+  diceGroups = (params.d || "").split("|").filter((g) => !!g);
+}
+$effect(() => parseGroups(parseParams(page.url.searchParams)));
+$effect(() => updateParams(diceGroups.join("|")));
 
-    function add() {
-        diceGroups = [...diceGroups, ''];
-    }
-    function remove(index: number) {
-        diceGroups = diceGroups.filter((_, i) => i !== index);
-    }
-    function rollAll() {
-        rollIndex += 1;
-    }
+let settingsVisible = $state(false);
+let helpVisible = $state(false);
+let rollIndex = $state(0);
+const settings = {
+  showAggregate: false,
+  showChart: true,
+  showStats: true,
+  showHistory: true,
+  showTable: true,
+};
+
+function add() {
+  diceGroups = [...diceGroups, ""];
+}
+function remove(index: number) {
+  diceGroups = diceGroups.filter((_, i) => i !== index);
+}
+function rollAll() {
+  rollIndex += 1;
+}
 </script>
 
-<style type="text/scss">
+<style type="text/css">
     .app-header {
         display: flex;
         flex-direction: row;
@@ -63,16 +85,16 @@
         <span class="title-long">D&D die distribution statistics</span>
     </h1>
     <div class="actions">
-        <button on:click={add} title="Add new calculator">
+        <button onclick={add} title="Add new calculator">
             <Icon name="plus" />
         </button>
-        <button on:click={rollAll} title="Roll all">
+        <button onclick={rollAll} title="Roll all">
             <Icon name="rollDice" />
         </button>
-        <button on:click={() => (settingsVisible = !settingsVisible)} title="Settings">
+        <button onclick={() => (settingsVisible = !settingsVisible)} title="Settings">
             <Icon name="settings" />
         </button>
-        <button on:click={() => (helpVisible = !helpVisible)} title="Help">
+        <button onclick={() => (helpVisible = !helpVisible)} title="Help">
             <Icon name="help" />
         </button>
     </div>
@@ -107,12 +129,12 @@
                 <h3>Hey, looks like you haven't configured any dice groups yet!</h3>
                 <p>
                     Click the [+] button above or try the following
-                    <a href="#d=2d6+3|d12+d4-1">example</a>
+                    <a href="?d=2d6+3|d12+d4-1">example</a>
                 </p>
             </div>
         {/if}
         {#each diceGroups as group, i}
-            <Calculator {settings} {rollIndex} removeSelf={() => remove(i)} bind:source={group} />
+            <Calculator {settings} {rollIndex} removeSelf={() => remove(i)} bind:source={diceGroups[i]} />
         {/each}
     </div>
 </main>

@@ -2,7 +2,7 @@
     // this component is heavily inspired by the svelte examples:
     // https://svelte.dev/examples#area-chart
     // https://svelte.dev/examples#bar-chart
-    import { scaleLinear, sparsify, transformHistory } from './functions';
+    import { scaleLinear, sparsify, transformHistory } from '$lib/functions';
     export let rolls;
     export let history;
     export let barWidth = 6;
