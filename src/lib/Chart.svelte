@@ -77,6 +77,8 @@
 
 <style>
   .chart {
+    --line-color: var(--color-bg-2);
+    --bar-color: var(--color-bg-2);
     width: 100%;
     max-width: 500px;
     margin-left: auto;

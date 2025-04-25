@@ -39,7 +39,7 @@
 
   let settingsVisible = $state(false);
   let helpVisible = $state(false);
-  let rollIndex = $state(0);
+  let roller = $state(false);
   let settings = $state({
     showAggregate: false,
     showChart: true,
@@ -51,14 +51,14 @@
   function add() {
     diceGroups = [
       ...diceGroups,
-      `d${Math.floor(Math.random() * 10)}+${Math.floor(Math.random() * 10)}`,
+      `d${Math.floor(Math.random() * 8) + 1}+${Math.floor(Math.random() * 10)}`,
     ];
   }
   function remove(index: number) {
     diceGroups = diceGroups.filter((_, i) => i !== index);
   }
   function rollAll() {
-    rollIndex += 1;
+    roller = !roller;
   }
 </script>
 
@@ -117,7 +117,7 @@
       </div>
     {/if}
     {#each diceGroups as group, i}
-      <Calculator {settings} {rollIndex} removeSelf={() => remove(i)} bind:source={diceGroups[i]} />
+      <Calculator {settings} {roller} removeSelf={() => remove(i)} bind:source={diceGroups[i]} />
     {/each}
   </div>
 </main>

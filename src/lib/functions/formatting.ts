@@ -1,12 +1,13 @@
 export function formatAge(seconds: number) {
-    if (seconds < 1) {
+    const secs = Math.floor(seconds );
+    if (secs < 1) {
         return 'now';
     }
-    if (seconds < 60) {
-        return `${seconds} seconds ago`;
+    if (secs < 60) {
+        return `${secs} seconds ago`;
     }
-    if (seconds < 3600) {
-        return `${Math.floor(seconds / 60)} minutes ago`;
+    if (secs < 3600) {
+        return `${Math.floor(secs / 60)} minutes ago`;
     }
     return 'a long time ago';
 }

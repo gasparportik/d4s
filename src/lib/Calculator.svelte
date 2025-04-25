@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     evaluateRolls,
-    formatAge,
     formatNumberMetric,
     loadRollHistory,
     parseCombinationString,
@@ -10,9 +9,12 @@
   } from "$lib/functions";
   import Chart from "./Chart.svelte";
   import Icon from "./Icon.svelte";
+  import Table from "./Table.svelte";
+  import RollHistory from "./RollHistory.svelte";
   let {
     source = $bindable("2d6+2"),
     removeSelf = () => {},
+    roller = false,
     settings = {
       showAggregate: false,
       showChart: false,
@@ -20,7 +22,6 @@
       showHistory: false,
       showTable: false,
     },
-    ...props
   } = $props();
 
   // basic stuff
@@ -49,26 +50,16 @@
   }
 
   // rolls and history
-  let { rollIndex = 0 } = props;
   let latestRollCollapsed = $state(false);
   let rollHistoryCollapsed = $state(false);
   let latestRoll = $state<Roll | null>(null);
   let rollHistory = $derived(loadRollHistory(diceString));
-  let t = $state(timeTick());
-  $effect(() => (rollIndex > 0 ? newRoll() : void 0));
-  // $: if (rollHistory.length > 0) {
-  //     saveRollHistory(diceString, rollHistory);
-  // }
+  $effect(() => {
+    roller;
+    setTimeout(newRoll, 0);
+  });
   const realTotal = $derived(rollHistory.reduce((a, r) => a + r.value, 0));
   const realAverage = $derived(realTotal / rollHistory.length);
-  function timeTick() {
-    return Math.round(new Date().getTime() / 1000);
-  }
-  function tickTock() {
-    t = timeTick();
-    setTimeout(tickTock, 1000);
-  }
-  tickTock();
   function newRoll(e?: MouseEvent) {
     let rollCount = 1;
     if (e && e.altKey) {
@@ -89,7 +80,7 @@
       return;
     }
     latestRoll = randomRoll(dice);
-    latestRoll.time = timeTick();
+    latestRoll.time = new Date().getTime();
     rollHistory = [latestRoll, ...rollHistory];
   }
   function clearHistory() {
@@ -103,7 +94,6 @@
   let tableCollapsed = $state(false);
   const stats = $derived(evaluateRolls(dice));
   const rolls = $derived(stats.rolls);
-  const maxChance = $derived(rolls.reduce((a, r) => Math.max(a, r.chance), 0));
 
   // settings
   const showStats = $derived(settings?.showStats);
@@ -160,14 +150,7 @@
           <Icon name="clear" size="16px" />
         </button>
       </summary>
-      <ul>
-        {#each rollHistory.slice(0, 50) as item}
-          <li>
-            {item.value}
-            {#if item.time}({formatAge(t - item.time)}){/if}
-          </li>
-        {/each}
-      </ul>
+      <RollHistory history={rollHistory} {diceString} />
     </details>
   {/if}
 
@@ -215,26 +198,7 @@
   {#if showTable}
     <details class="table" open={!tableCollapsed}>
       <summary class="section-head"> Detailed roll chances </summary>
-      <table>
-        <thead>
-          <tr>
-            <td>Value</td>
-            <td>Rolls</td>
-            <td>Chance</td>
-          </tr>
-        </thead>
-        <tbody>
-          {#each rolls as roll}
-            <tr>
-              <td>{roll.value}</td>
-              <td>{roll.count}</td>
-              <td class="chance" style={`--percentage: ${(100 * roll.chance) / maxChance}`}>
-                {roll.chance.toFixed(2)}%
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+      <Table rolls={stats.rolls} history={rollHistory} />
     </details>
   {/if}
 </article>
@@ -322,38 +286,6 @@
     margin: 0;
   }
 
-  .calculator .roll-history ul {
-    max-height: 5em;
-    overflow: auto;
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-  }
-
-  .calculator .chart {
-    --line-color: var(--color-bg-2);
-    --bar-color: var(--color-bg-2);
-  }
-
-  .calculator .table table {
-    border-spacing: 0;
-  }
-
-  .calculator .table tbody td {
-    border-top: 1px solid #666;
-    padding: 0.3em 0.5em;
-  }
-
-  .calculator .table .chance {
-    background: linear-gradient(
-      to right,
-      hsla(calc(var(--percentage) + 0), 80%, 50%, 0.5) 0%,
-      hsla(calc(var(--percentage) + 0), 80%, 50%, 0.5) calc(1% * var(--percentage)),
-      rgba(0, 0, 0, 0) calc(1% * var(--percentage) + 1%),
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-
   header.renaming .name-field,
   header:not(.renaming) .rename-field {
     display: none;
@@ -381,9 +313,5 @@
   }
   .section-head button {
     flex: 0 0 auto;
-  }
-
-  .table table {
-    width: 100%;
   }
 </style>
